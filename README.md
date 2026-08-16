@@ -10,6 +10,36 @@ Two transports share one CLI:
 | **digital** (default) | any file | Reed-Solomon repairs the damage it can; what it can't becomes localised holes. Everything else is bit-exact. |
 | **analog** | images only | Classic SSTV scan lines. Noise becomes visible noise, dropouts become smears. The picture always comes out whole. |
 
+## Requirements
+
+**Python 3.11 – 3.14.** Developed and tested on 3.13.
+
+That range is not arbitrary, and the floor matters more than it looks. `requires-python`
+decides which numpy and scipy the resolver is *allowed* to pick: it must find versions
+that support the entire declared range. Declare `>=3.10` and the newest candidates
+become numpy 2.2.x and scipy 1.15.x — the last releases that still support 3.10 — and
+those predate CPython 3.14, so they ship no `cp314` wheels. Install on 3.14 and pip
+falls back to the sdist and starts **compiling numpy and scipy from source**, which
+needs a C and Fortran toolchain and takes many minutes.
+
+Raising the floor to `>=3.11` lets the resolver reach numpy 2.4+ and scipy 1.17+, which
+do have `cp311`–`cp314` wheels. The upper end is set by scipy, which has no 3.15 wheels yet.
+
+As a second line of defence, `pyproject.toml` declares:
+
+```toml
+[tool.pdm.resolution]
+only-binary = ["numpy", "scipy", "pillow"]
+```
+
+so `pdm.lock` contains **zero source distributions** for the compiled dependencies. A
+missing wheel now produces an immediate resolution error naming the package, instead of
+a surprise half-hour build.
+
+If you change `requires-python`, delete `pdm.lock` before re-locking. PDM records the
+target range in `[[metadata.targets]]` and reuses it, so an in-place `pdm lock` can
+leave the lock targeting the old range while `pyproject.toml` claims the new one.
+
 ## Install
 
 ```bash
@@ -158,7 +188,9 @@ an analog header can be found.
   most real audio paths will remove them.
 - Reed-Solomon here is pure Python. Installing the optional `creedsolo` Cython
   extension speeds up encode and decode considerably; SillySSTV uses it
-  automatically when present.
+  automatically when present. Note that `creedsolo` *is* a source build — it is
+  deliberately left out of the dependency list for that reason.
+- scipy has no CPython 3.15 wheels yet, so 3.15 is out of range until it does.
 
 ## Development
 

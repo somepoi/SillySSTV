@@ -7,10 +7,18 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.10"
+# Floor deliberately kept high: it decides which numpy/scipy the resolver may
+# pick, and older floors pin them to releases that predate the newest CPython
+# and therefore ship no matching wheels -- which means building them from
+# source. See [tool.pdm.resolution] below.
+requires-python = ">=3.11"
 keywords = ["sstv", "modem", "mfsk", "reed-solomon", "audio", "steganography", "ham radio"]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Communications :: Ham Radio",
     "Topic :: Multimedia :: Sound/Audio :: Conversion",
 ]
@@ -39,6 +47,13 @@ dev = [
 
 [tool.pdm]
 distribution = true
+
+[tool.pdm.resolution]
+# Never silently fall back to an sdist for the compiled dependencies. Building
+# numpy or scipy from source needs a C/Fortran toolchain and takes many
+# minutes; a hard resolution error naming the package is a far better failure
+# than a surprise compile.
+only-binary = ["numpy", "scipy", "pillow"]
 
 [tool.pdm.scripts]
 test = "pytest -q"
