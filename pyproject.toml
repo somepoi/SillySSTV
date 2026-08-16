@@ -1,0 +1,49 @@
+[project]
+name = "sillysstv"
+version = "0.1.0"
+description = "SSTV-like converter: turn photos and arbitrary files into sound and back, so that damaged audio yields damaged-but-whole data."
+authors = [
+    {name = "SillySSTV contributors"},
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+keywords = ["sstv", "modem", "mfsk", "reed-solomon", "audio", "steganography", "ham radio"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Ham Radio",
+    "Topic :: Multimedia :: Sound/Audio :: Conversion",
+]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pillow>=10.0",
+    "reedsolo>=1.7.0",
+    "soundfile>=0.12.1",
+]
+
+[project.scripts]
+sillysstv = "sillysstv.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/SillySSTV/SillySSTV"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+test = "pytest -q"
+demo = {shell = "python -m sillysstv.cli --help"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
